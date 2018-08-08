@@ -2,7 +2,7 @@
 
 //See paper for details on the error reconciliation
 
-static int32_t abs(int32_t v)
+static int32_t noise_abs(int32_t v)
 {
   int32_t mask = v >> 31;
   return (v ^ mask) - mask;
@@ -12,7 +12,7 @@ static int32_t abs(int32_t v)
 static int32_t f(int32_t *v0, int32_t *v1, uint32_t x)
 {
   int32_t xit, t, r, b;
-  
+
   // Next 6 lines compute t = x/PARAM_Q;
   b = x*2730;
   t = b >> 25;
@@ -29,7 +29,7 @@ static int32_t f(int32_t *v0, int32_t *v1, uint32_t x)
   r = t & 1;
   *v1 = (t>>1)+r;
 
-  return abs(x-((*v0)*2*PARAM_Q));
+  return noise_abs(x-((*v0)*2*PARAM_Q));
 }
 
 static int32_t g(int32_t x)
@@ -49,7 +49,7 @@ static int32_t g(int32_t x)
 
   t *= 8*PARAM_Q;
 
-  return abs(t - x);
+  return noise_abs(t - x);
 }
 
 
@@ -81,7 +81,7 @@ void helprec(poly *c, const poly *v, const unsigned char *seed, unsigned char no
   n[7] = nonce;
 
   crypto_stream_chacha20(rand,32,n,seed);
- 
+
   for(i=0; i<256; i++)
   {
     rbit = (rand[i>>3] >> (i&7)) & 1;
@@ -98,7 +98,7 @@ void helprec(poly *c, const poly *v, const unsigned char *seed, unsigned char no
     v_tmp[2] = ((~k) & v0[2]) ^ (k & v1[2]);
     v_tmp[3] = ((~k) & v0[3]) ^ (k & v1[3]);
 
-    c->coeffs[  0+i] = (v_tmp[0] -   v_tmp[3]) & 3;  
+    c->coeffs[  0+i] = (v_tmp[0] -   v_tmp[3]) & 3;
     c->coeffs[256+i] = (v_tmp[1] -   v_tmp[3]) & 3;
     c->coeffs[512+i] = (v_tmp[2] -   v_tmp[3]) & 3;
     c->coeffs[768+i] = (   -k    + 2*v_tmp[3]) & 3;
